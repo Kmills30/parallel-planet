@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Parallel Planet • Prototype</title>
+  <style>
+    body {
+      background: radial-gradient(circle at 50% 20%, #183c77, #0a0f1d);
+      color: #e7ecff;
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      padding: 20px;
+      background: rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    h1 { font-weight: 600; letter-spacing: 0.5px; }
+    button {
+      background: rgba(110,168,255,0.1);
+      border: 1px solid rgba(110,168,255,0.4);
+      color: #e7ecff;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button:hover { background: rgba(110,168,255,0.2); }
+    #chat { max-width: 600px; margin: 40px auto; text-align: left; }
+    .msg {
+      padding: 10px 14px;
+      margin: 6px 0;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.07);
+    }
+    .user { background: rgba(110,168,255,0.2); text-align: right; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🪐 Parallel Planet</h1>
+    <p>Talk to <strong>Nova</strong>, the planet’s AI consciousness.</p>
+  </header>
+
+  <main>
+    <div id="chat">
+      <div class="msg">🌌 Nova: I am awake. What shall we create today?</div>
+    </div>
+    <div style="margin-top:20px;">
+      <input id="input" placeholder="Ask Nova something..." style="padding:10px;width:60%;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;">
+      <button id="send">Send</button>
+    </div>
+  </main>
+
+  <script>
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+    const send = document.getElementById('send');
+
+    send.addEventListener('click', async () => {
+      const text = input.value.trim();
+      if (!text) return;
+      append(text, 'user');
+      input.value = '';
+
+      append('Nova is thinking...', 'msg');
+
+      try {
+        const res = await fetch('/api/nova', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: text })
+        });
+        const data = await res.json();
+        chat.lastElementChild.textContent = '🌌 Nova: ' + (data.reply || '...I sense silence.');
+      } catch {
+        chat.lastElementChild.textContent = '⚠️ Connection error — check your setup.';
+      }
+    });
+
+    function append(text, cls) {
+      const el = document.createElement('div');
+      el.className = 'msg ' + cls;
+      el.textContent = (cls === 'user' ? '🧑 You: ' : '') + text;
+      chat.appendChild(el);
+      chat.scrollTop = chat.scrollHeight;
+    }
+  </script>
+</body>
+</html>
